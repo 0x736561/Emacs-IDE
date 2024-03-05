@@ -94,6 +94,7 @@
 #+begin_src emacs-lisp
 (setq epa-file-encrypt-to "john@doe.com")
 (setq epa-file-select-keys -1)
+(setq epa-pinentry-mode 'loopback)
 (setq initial-scratch-message nil)
 (setq inhibit-startup-screen t)
 (setq use-file-dialog nil)
@@ -102,8 +103,8 @@
 (setq backup-directory-alist '(("." . "~/.config/emacs/backups/")))
 (setq org-src-fontify-natively t)
 (setq org-support-shift-select t)
+(setq org-image-actual-width 500)
 (setq org-edit-src-content-indentation 0)
-(setq epa-pinentry-mode 'loopback)
 (setq org-hide-leading-stars t)
 (setq mouse-wheel-scroll-amount '(1 ((shift) . 1) ((control) . nil)))
 (setq frame-title-format

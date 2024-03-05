@@ -1,3 +1,4 @@
+
 * Emacs IDE
 
 ** Um setup mais completo e com mais funções
@@ -16,6 +17,10 @@ Algumas das diferenças incluem:
 ** Ainda assim, simples.
 Apesar dessas diferenças, essa configuração ainda é bem simples e fácil de ser modificada, 
 sendo necessário apenas alterar o arquivo /config.org/.
+
+** Preview
+
+[[./preview.png]]
 
 ** Instalação
 Para instalar, basta digitar o seguinte comando no seu terminal:
