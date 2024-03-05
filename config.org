@@ -1,0 +1,280 @@
+#+TITLE:  Emacs Config
+#+AUTHOR: [[https://github.com/0x736561][0x736561]]
+#+STARTUP:overview
+
+* base
+#+begin_src emacs-lisp
+(menu-bar-mode -1)
+(tool-bar-mode -1)
+(toggle-scroll-bar -1)
+(scroll-bar-mode -1)
+(blink-cursor-mode -1)
+(electric-indent-mode -1)
+(electric-pair-mode +1)
+(column-number-mode +1)
+(size-indication-mode +1)
+;;(global-display-line-numbers-mode +1)
+(global-prettify-symbols-mode +1)
+;;(global-hl-line-mode +1)
+(delete-selection-mode +1)
+(ido-mode +1)
+(put 'upcase-region 'disabled nil)
+(put 'downcase-region 'disabled nil)
+(prefer-coding-system 'utf-8)
+(set-default-coding-systems 'utf-8)
+(set-terminal-coding-system 'utf-8)
+(set-keyboard-coding-system 'utf-8)
+(set-frame-font "JetBrainsMono 10" t)
+;;(load-theme 'misterioso t)
+
+#+end_src
+* require
+#+begin_src emacs-lisp
+(require 'org-tempo)
+(require 'epa-file)
+#+end_src
+
+* packages
+#+begin_src emacs-lisp
+(defvar elpaca-installer-version 0.7)
+(defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
+(defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
+(defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
+(defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
+                              :ref nil :depth 1
+                              :files (:defaults "elpaca-test.el" (:exclude "extensions"))
+                              :build (:not elpaca--activate-package)))
+(let* ((repo  (expand-file-name "elpaca/" elpaca-repos-directory))
+       (build (expand-file-name "elpaca/" elpaca-builds-directory))
+       (order (cdr elpaca-order))
+       (default-directory repo))
+  (add-to-list 'load-path (if (file-exists-p build) build repo))
+  (unless (file-exists-p repo)
+    (make-directory repo t)
+    (when (< emacs-major-version 28) (require 'subr-x))
+    (condition-case-unless-debug err
+        (if-let ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
+                 ((zerop (apply #'call-process `("git" nil ,buffer t "clone"
+                                                 ,@(when-let ((depth (plist-get order :depth)))
+                                                     (list (format "--depth=%d" depth) "--no-single-branch"))
+                                                 ,(plist-get order :repo) ,repo))))
+                 ((zerop (call-process "git" nil buffer t "checkout"
+                                       (or (plist-get order :ref) "--"))))
+                 (emacs (concat invocation-directory invocation-name))
+                 ((zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
+                                       "--eval" "(byte-recompile-directory \".\" 0 'force)")))
+                 ((require 'elpaca))
+                 ((elpaca-generate-autoloads "elpaca" repo)))
+            (progn (message "%s" (buffer-string)) (kill-buffer buffer))
+          (error "%s" (with-current-buffer buffer (buffer-string))))
+      ((error) (warn "%s" err) (delete-directory repo 'recursive))))
+  (unless (require 'elpaca-autoloads nil t)
+    (require 'elpaca)
+    (elpaca-generate-autoloads "elpaca" repo)
+    (load "./elpaca-autoloads")))
+(add-hook 'after-init-hook #'elpaca-process-queues)
+(elpaca `(,@elpaca-order))
+
+(elpaca elpaca-use-package
+  (elpaca-use-package-mode))
+(elpaca-wait)
+
+(elpaca lsp-mode :ensure t :config (require 'lsp-mode))
+(elpaca lsp-ui :ensure t)
+(elpaca fuzzy-finder :ensure t)
+(elpaca which-key :ensure t)
+(elpaca company :ensure t)
+(elpaca dashboard :ensure t)
+(elpaca vertico :ensure t)
+(elpaca telephone-line :ensute t)
+(elpaca gruvbox-theme :ensure t :config (load-theme 'gruvbox t))
+
+#+end_src
+* variables
+#+begin_src emacs-lisp
+(setq epa-file-encrypt-to "john@doe.com")
+(setq epa-file-select-keys -1)
+(setq initial-scratch-message nil)
+(setq inhibit-startup-screen t)
+(setq use-file-dialog nil)
+(setq use-dialog-box nil)
+(setq pop-up-windows nil)
+(setq backup-directory-alist '(("." . "~/.config/emacs/backups/")))
+(setq org-src-fontify-natively t)
+(setq org-support-shift-select t)
+(setq org-edit-src-content-indentation 0)
+(setq epa-pinentry-mode 'loopback)
+(setq org-hide-leading-stars t)
+(setq mouse-wheel-scroll-amount '(1 ((shift) . 1) ((control) . nil)))
+(setq frame-title-format
+      '((:eval (if (buffer-file-name)
+		   (abbreviate-file-name (buffer-file-name))
+		 "%b"))))
+(setq scroll-margin 0
+      scroll-conservatively 100000
+      scroll-preserve-screen-position 1)
+(setq minibuffer-prompt-properties
+        '(read-only t cursor-intangible t face minibuffer-prompt))
+(setq enable-recursive-minibuffers t)
+(setq initial-buffer-choice (lambda 
+			      () 
+			      (get-buffer-create "*dashboard*"))
+      dashboard-center-content t
+      dashboard-startup-banner 3
+      dashboard-items '((recents   . 5)
+                        (bookmarks . 5)
+                        (agenda    . 5))
+      dashboard-item-shortcuts '((recents   . "r")
+                                 (bookmarks . "m")
+                                 (agenda    . "a")))
+(setq treesit-language-source-alist
+   '((bash "https://github.com/tree-sitter/tree-sitter-bash")
+     (cmake "https://github.com/uyha/tree-sitter-cmake")
+     (css "https://github.com/tree-sitter/tree-sitter-css")
+     (elisp "https://github.com/Wilfred/tree-sitter-elisp")
+     (html "https://github.com/tree-sitter/tree-sitter-html")
+     (javascript "https://github.com/tree-sitter/tree-sitter-javascript" "master" "src")
+     (json "https://github.com/tree-sitter/tree-sitter-json")
+     (make "https://github.com/alemuller/tree-sitter-make")
+     (markdown "https://github.com/ikatyang/tree-sitter-markdown")
+     (python "https://github.com/tree-sitter/tree-sitter-python")
+     (c "https://github.com/tree-sitter/tree-sitter-c")
+     (cpp "https://github.com/tree-sitter/tree-sitter-cpp")
+     (rust "https://github.com/tree-sitter/tree-sitter-rust")))
+(setq major-mode-remap-alist
+ '((js-mode . js-ts-mode)
+   (css-mode . css-ts-mode)
+   (python-mode . python-ts-mode)
+   (c-mode . c-ts-mode)
+   (cpp-mode . cpp-ts-mode)
+   (rust-mode . rust-ts-mode)))
+(setq telephone-line-primary-left-separator 'telephone-line-cubed-left
+      telephone-line-secondary-left-separator 'telephone-line-cubed-hollow-left
+      telephone-line-primary-right-separator 'telephone-line-cubed-right
+      telephone-line-secondary-right-separator 'telephone-line-cubed-hollow-right)
+(setq telephone-line-height 24
+      telephone-line-evil-use-short-tag t)
+#+end_src
+* hooks
+#+begin_src emacs-lisp
+(add-hook 'elpaca-after-init-hook 'global-company-mode)
+(add-hook 'elpaca-after-init-hook 'which-key-mode)
+(add-hook 'elpaca-after-init-hook 'savehist-mode)
+(add-hook 'elpaca-after-init-hook 'vertico-mode)
+(add-hook 'elpaca-after-init-hook 'telephone-line-mode)
+(add-hook 'elpaca-after-init-hook 'dashboard-setup-startup-hook)
+(add-hook 'prog-mode-hook         #'display-line-numbers-mode)
+(add-hook 'prog-mode-hook         #'hl-line-mode +1)
+(add-hook 'prog-mode-hook         #'lsp-mode)
+(add-hook 'minibuffer-setup-hook  #'cursor-intangible-mode)
+#+end_src
+* functions
+** treesit install
+#+begin_src emacs-lisp
+(defun treesit/install ()
+  (interactive)
+  (mapc #'treesit-install-language-grammar (mapcar #'car treesit-language-source-alist))
+  )
+#+end_src
+** config
+#+begin_src emacs-lisp
+(defun openconfig()
+  (interactive)
+  (find-file "~/.config/emacs/config.org"))
+#+end_src
+** upload
+#+begin_src emacs-lisp
+(defun upload()
+  (interactive)
+  (setq file (buffer-substring (region-beginning)(region-end)))
+  (compile (concat "find ~/ -name " 
+		   file 
+		   " -type f -print0" 
+		   "|" 
+		   "xargs -0 -I \"{}\" curl -s -F\"file=@{}\" http://0x0.st")))
+#+end_src
+* keybinds
+** list
+ |----------------------+------------------------------------------------------+------|
+ | Tecla                | Ação                                                 | modo |
+ |----------------------+------------------------------------------------------+------|
+ | C-w                  | cortar                                               |      |
+ | M-w                  | copiar                                               |      |
+ | C-y                  | colar                                                |      |
+ | C-x u ou C-/         | desfazer                                             |      |
+ | C-k                  | deletar linha                                        |      |
+ | C-x C-u              | deixar seleção em caixa alta                         |      |
+ | C-x C-l              | deixar seleção em caixa baixa                        |      |
+ | C-Home               | topo do buffer                                       |      |
+ | C-End                | fim do buffer                                        |      |
+ | C-x k                | matar buffer atual                                   |      |
+ | C-x b                | alterna entre buffers                                |      |
+ | C-x x r              | renomear buffer                                      |      |
+ | C-x C-e              | avaliar código                                       |      |
+ | C-x d                | gerenciador de arquivos                              |      |
+ | C-x C-f              | abrir arquivo                                        |      |
+ | C-x C-s              | salvar arquivo                                       |      |
+ | C-x C-b              | lista de buffers abertos                             |      |
+ | C-x o                | trocar de janela                                     |      |
+ | C-x 0                | fechar janela                                        |      |
+ | C-x 1                | fechar todas as janelas exceto a atual               |      |
+ | C-x 2                | abrir janela embaixo                                 |      |
+ | C-x 3                | abrir janela na direita                              |      |
+ | C-x 4 f              | abrir novo arquivo na mesma janela                   |      |
+ | C-x 5 f              | abrir novo arquivo em uma nova janela                |      |
+ | C-x C-c              | fechar emacs                                         |      |
+ | M-x                  | executar um comando                                  |      |
+ | S-tab                | recolher listas                                      | org  |
+ | C-x r m              | definir Bookmark                                     |      |
+ | C-x r l              | lista de Bookmarks                                   |      |
+ | M-!                  | executar comando externo                             |      |
+ | C-c C-c              | marcar Checkbox como concluída                       | org  |
+ | C-c C-x C-v          | mostrar imagens do buffer                            | org  |
+ | C-x t 2              | cria uma aba                                         |      |
+ | C-x t 1              | fecha as outras abas                                 |      |
+ | C-x t 0              | fecha a aba atual                                    |      |
+ | C-x t d              | abre o dired em uma nova aba                         |      |
+ | C-x t O              | aba anterior                                         |      |
+ | C-x t o              | próxima aba                                          |      |
+ | M-shift up/down      | movimentar linha sob cursor                          |      |
+ | C-c C-e              | exportar arquivo                                     | org  |
+ | S-Esquerda/Direita   | alternar entre estados                               | org  |
+ | M-Esquerda/Direita   | alterar hierarquia das headings                      | org  |
+ | C-x =                | aumenta o texto                                      |      |
+ | C-x -                | diminui o texto                                      |      |
+ | C-x Esquerda/Direita | alterna entre buffers à esquerda ou direita do atual |      |
+ | &                    | abrir url em navegador externo                       | eww  |
+ | l                    | voltar para página anterior                          | eww  |
+ | d                    | download                                             | eww  |
+ | v                    | código-fonte da página                               | eww  |
+ | b                    | adiciona bookmark                                    | eww  |
+ | b                    | lista de bookmarks                                   | eww  |
+ | C-x espaço           | seleção (bloco)                                      |      |
+ | C-x r t              | substituição de texto (bloco)                        |      |
+ | C-espaço             | seleção (linha)                                      |      |
+ | C-a                  | início da linha                                      |      |
+ | C-e                  | fim da linha                                         |      |
+ | C-c                  | copiar                                               | cua  |
+ | C-x                  | cortar                                               | cua  |
+ | C-v                  | colar                                                | cua  |
+ | C-z                  | desfazer                                             | cua  |
+ | C-S-z                | refazer                                              | cua  |
+ | C-x C-x (rápido)     | C-x                                                  | cua  |
+ | C-c C-c (rápido)     | C-c                                                  | cua  |
+ |----------------------+------------------------------------------------------+------|
+** custom
+#+begin_src emacs-lisp
+(keymap-global-set	"C-x C-b"	'ibuffer)
+(keymap-global-set      "s-/ f"         'fuzzy-finder)
+(keymap-global-set	"s-/ r"		'restart-emacs)
+(keymap-global-set	"s-/ s"		'eshell)
+(keymap-global-set	"s-/ b"		'battery)
+(keymap-global-set	"s-/ u"		'upload)
+(keymap-global-set	"s-/ c"		'compile)
+(keymap-global-set	"s-/ t"		'treesit/install)
+(keymap-global-set	"s-/ C"		'openconfig)
+(keymap-global-set	"s-/ g"		'magit)
+(keymap-global-set	"s-/ l"		'lsp-mode)
+(keymap-global-set	"s-/ i"		'display-fill-column-indicator-mode)
+#+end_src
+
