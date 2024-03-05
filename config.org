@@ -25,6 +25,7 @@ Configurações básicas como a remoção das toolbars e ajustes do ambiente.
 (set-terminal-coding-system 'utf-8)
 (set-keyboard-coding-system 'utf-8)
 (set-frame-font "JetBrainsMono 10" t)
+(add-to-list 'default-frame-alist '(font . "JetBrains Mono 10" ))
 #+end_src
 * require
 Requisição de funções para serem usadas pela configuração.
