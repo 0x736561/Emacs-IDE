@@ -1,8 +1,10 @@
-#+TITLE:  Emacs Config
-#+AUTHOR: [[https://github.com/0x736561][0x736561]]
-#+STARTUP:overview
+#+TITLE:	Emacs LSP
+#+DESCRIPTION:	Uma configuração simples, porém extremamente capaz.
+#+AUTHOR:	[[https://github.com/0x736561][0x736561]]
+#+STARTUP:	overview
 
 * base
+Configurações básicas como a remoção das toolbars e ajustes do ambiente.
 #+begin_src emacs-lisp
 (menu-bar-mode -1)
 (tool-bar-mode -1)
@@ -13,9 +15,7 @@
 (electric-pair-mode +1)
 (column-number-mode +1)
 (size-indication-mode +1)
-;;(global-display-line-numbers-mode +1)
 (global-prettify-symbols-mode +1)
-;;(global-hl-line-mode +1)
 (delete-selection-mode +1)
 (ido-mode +1)
 (put 'upcase-region 'disabled nil)
@@ -25,16 +25,17 @@
 (set-terminal-coding-system 'utf-8)
 (set-keyboard-coding-system 'utf-8)
 (set-frame-font "JetBrainsMono 10" t)
-;;(load-theme 'misterioso t)
-
 #+end_src
 * require
+Requisição de funções para serem usadas pela configuração.
+
 #+begin_src emacs-lisp
 (require 'org-tempo)
-(require 'epa-file)
 #+end_src
 
 * packages
+** Elpaca
+Gerenciador de pacotes
 #+begin_src emacs-lisp
 (defvar elpaca-installer-version 0.7)
 (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
@@ -74,11 +75,14 @@
     (load "./elpaca-autoloads")))
 (add-hook 'after-init-hook #'elpaca-process-queues)
 (elpaca `(,@elpaca-order))
-
 (elpaca elpaca-use-package
   (elpaca-use-package-mode))
 (elpaca-wait)
+#+end_src
 
+** Pacotes
+Pacotes usados.
+#+begin_src 
 (elpaca lsp-mode :ensure t :config (require 'lsp-mode))
 (elpaca lsp-ui :ensure t)
 (elpaca fuzzy-finder :ensure t)
@@ -88,13 +92,12 @@
 (elpaca vertico :ensure t)
 (elpaca telephone-line :ensute t)
 (elpaca gruvbox-theme :ensure t :config (load-theme 'gruvbox t))
-
 #+end_src
 * variables
+Definições de variáveis.
+** base
+Definições de variáveis básicas.
 #+begin_src emacs-lisp
-(setq epa-file-encrypt-to "john@doe.com")
-(setq epa-file-select-keys -1)
-(setq epa-pinentry-mode 'loopback)
 (setq initial-scratch-message nil)
 (setq inhibit-startup-screen t)
 (setq use-file-dialog nil)
@@ -117,6 +120,11 @@
 (setq minibuffer-prompt-properties
         '(read-only t cursor-intangible t face minibuffer-prompt))
 (setq enable-recursive-minibuffers t)
+#+end_src
+
+** Dashboard
+Configurações da dashboard.
+#+begin_src emacs-lisp
 (setq initial-buffer-choice (lambda 
 			      () 
 			      (get-buffer-create "*dashboard*"))
@@ -128,6 +136,10 @@
       dashboard-item-shortcuts '((recents   . "r")
                                  (bookmarks . "m")
                                  (agenda    . "a")))
+#+end_src
+** Treesit
+Configurações do Treesit, a integração nativa do Emacs com o Tree Sitter.
+#+begin_src emacs-lisp
 (setq treesit-language-source-alist
    '((bash "https://github.com/tree-sitter/tree-sitter-bash")
      (cmake "https://github.com/uyha/tree-sitter-cmake")
@@ -149,6 +161,11 @@
    (c-mode . c-ts-mode)
    (cpp-mode . cpp-ts-mode)
    (rust-mode . rust-ts-mode)))
+#+end_src
+
+** Telephone Line
+Configurações da modeline personalizada.
+#+begin_src emacs-lisp
 (setq telephone-line-primary-left-separator 'telephone-line-cubed-left
       telephone-line-secondary-left-separator 'telephone-line-cubed-hollow-left
       telephone-line-primary-right-separator 'telephone-line-cubed-right
@@ -170,20 +187,26 @@
 (add-hook 'minibuffer-setup-hook  #'cursor-intangible-mode)
 #+end_src
 * functions
+Funções simples criadas para agilizar alguma tarefa ou por conveniência.
 ** treesit install
+Instala todas as /"grammars"/ listadas na sessão de variáveis.
 #+begin_src emacs-lisp
 (defun treesit/install ()
   (interactive)
-  (mapc #'treesit-install-language-grammar (mapcar #'car treesit-language-source-alist))
-  )
+  (mapc #'treesit-install-language-grammar (mapcar #'car treesit-language-source-alist)))
 #+end_src
 ** config
+Abre o Arquivo de configurações
 #+begin_src emacs-lisp
 (defun openconfig()
   (interactive)
   (find-file "~/.config/emacs/config.org"))
 #+end_src
 ** upload
+Faz o upload de um arquivo selecionado pela região.
+
+*NÃO FAÇA UPLOAD DE ARQUIVOS SENSÍVEIS OU PRIVADOS*
+*A ÚNICA FORMA DE DELETAR ALGO POR VIA DO SUPORTE DO [[https://0x0.st][0x0.st]]*
 #+begin_src emacs-lisp
 (defun upload()
   (interactive)
@@ -196,6 +219,7 @@
 #+end_src
 * keybinds
 ** list
+ Lista de teclas de atalho padrões do Emacs.
  |----------------------+------------------------------------------------------+------|
  | Tecla                | Ação                                                 | modo |
  |----------------------+------------------------------------------------------+------|
@@ -264,6 +288,7 @@
  | C-c C-c (rápido)     | C-c                                                  | cua  |
  |----------------------+------------------------------------------------------+------|
 ** custom
+Teclas de atalho personalizadas.
 #+begin_src emacs-lisp
 (keymap-global-set	"C-x C-b"	'ibuffer)
 (keymap-global-set      "s-/ f"         'fuzzy-finder)
