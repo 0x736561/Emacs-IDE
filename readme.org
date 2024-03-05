@@ -26,3 +26,5 @@ git clone https://github.com/0x736561/Emacs-setup --depth=1 ~/.config/emacs
 
 Depois disso, abra o Emacs e espere todos os pacotes serem instalados, quando todos forem 
 instalados, reinicie o Emacs.
+
+** TODO Documentação
