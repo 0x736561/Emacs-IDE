@@ -1,0 +1,28 @@
+* Emacs IDE
+
+** Um setup mais completo e com mais funções
+Ao contrário do setup em meu [[https://github.com/0x736561/Emacs-base][outro repositório]], esse setup é bem mais completo e também possui 
+funções e pacotes externos para proporcionar uma experiência mais agradável e pronta para uso.
+
+Algumas das diferenças incluem: 
+
+- O tema gruvbox
+- Uma dashboard
+- Suporte a LSP e Treesitter já configurados
+- Modeline personalizada
+- Fuzzy Finder
+- Gerenciador de pacotes [[https://github.com/progfolio/elpaca][Elpaca]]
+
+** Ainda assim, simples.
+Apesar dessas diferenças, essa configuração ainda é bem simples e fácil de ser modificada, 
+sendo necessário apenas alterar o arquivo /config.org/.
+
+** Instalação
+Para instalar, basta digitar o seguinte comando no seu terminal:
+
+#+begin_src bash
+git clone https://github.com/0x736561/Emacs-setup --depth=1 ~/.config/emacs
+#+end_src
+
+Depois disso, abra o Emacs e espere todos os pacotes serem instalados, quando todos forem 
+instalados, reinicie o Emacs.
