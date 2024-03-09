@@ -91,7 +91,7 @@ Pacotes usados.
 (elpaca company :ensure t)
 (elpaca dashboard :ensure t)
 (elpaca vertico :ensure t)
-(elpaca telephone-line :ensute t)
+(elpaca telephone-line :ensure t)
 (elpaca gruvbox-theme :ensure t :config (load-theme 'gruvbox t))
 #+end_src
 * variables
