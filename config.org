@@ -79,11 +79,7 @@ Gerenciador de pacotes
 (elpaca elpaca-use-package
   (elpaca-use-package-mode))
 (elpaca-wait)
-#+end_src
 
-** Pacotes
-Pacotes usados.
-#+begin_src 
 (elpaca lsp-mode :ensure t :config (require 'lsp-mode))
 (elpaca lsp-ui :ensure t)
 (elpaca fuzzy-finder :ensure t)
